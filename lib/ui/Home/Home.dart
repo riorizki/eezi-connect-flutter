@@ -1,54 +1,71 @@
 import 'package:eezi_connect/config/ColorConfig.dart';
+import 'package:eezi_connect/config/Setting.dart';
+import 'package:eezi_connect/ui/Home/HomeController.dart';
+import 'package:eezi_connect/ui/Login/Login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:loading_overlay/loading_overlay.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatelessWidget {
+  final HomeController controller = Get.put(HomeController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          AppBarComponent(),
-          BodyComponent(),
-          Positioned(
-            top: 567.h,
-            left: 20.w,
-            right: 20.w,
-            child: Container(
-              width: 320.w,
-              height: 60.h,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                color: COLOR_CONNECT_1,
+      body: Obx(
+        () => LoadingOverlay(
+          isLoading: controller.isLoading.value,
+          child: Stack(
+            children: [
+              AppBarComponent(
+                controller: controller,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  BottomItemWidget(
-                    iconData: Icons.home,
-                    title: 'Home',
-                    color: COLOR_ACCENT,
-                  ),
-                  BottomItemWidget(
-                    iconData: Icons.chat,
-                    title: 'Messages',
-                    color: COLOR_WHITE,
-                  ),
-                  BottomItemWidget(
-                    iconData: Icons.account_balance_wallet,
-                    title: 'Payment',
-                    color: COLOR_WHITE,
-                  ),
-                  BottomItemWidget(
-                    iconData: Icons.local_mall,
-                    title: 'Marketplace',
-                    color: COLOR_WHITE,
-                  ),
-                ],
+              BodyComponent(
+                controller: controller,
               ),
-            ),
+              Positioned(
+                top: 567.h,
+                left: 20.w,
+                right: 20.w,
+                child: Container(
+                  width: 320.w,
+                  height: 60.h,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: COLOR_CONNECT_1,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      BottomItemWidget(
+                        iconData: Icons.home,
+                        title: 'Home',
+                        color: COLOR_ACCENT,
+                      ),
+                      BottomItemWidget(
+                        iconData: Icons.chat,
+                        title: 'Messages',
+                        color: COLOR_WHITE,
+                      ),
+                      BottomItemWidget(
+                        iconData: Icons.account_balance_wallet,
+                        title: 'Payment',
+                        color: COLOR_WHITE,
+                      ),
+                      BottomItemWidget(
+                        iconData: Icons.local_mall,
+                        title: 'Marketplace',
+                        color: COLOR_WHITE,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -98,7 +115,10 @@ class BottomItemWidget extends StatelessWidget {
 class BodyComponent extends StatelessWidget {
   const BodyComponent({
     Key key,
+    @required this.controller,
   }) : super(key: key);
+
+  final HomeController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -126,16 +146,31 @@ class BodyComponent extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CardWidget(
-                    imageName: 'icon_tracking.png',
-                    mr: 10,
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchApps(com: 'com.weeo.tracking');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_tracking.png',
+                      mr: 10,
+                    ),
                   ),
-                  CardWidget(
-                    imageName: 'icon_match.png',
-                    mr: 10,
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchApps(com: 'com.weeo.match');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_match.png',
+                      mr: 10,
+                    ),
                   ),
-                  CardWidget(
-                    imageName: 'icon_task.png',
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchApps(com: 'com.weeo.task');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_task.png',
+                    ),
                   ),
                 ],
               ),
@@ -145,16 +180,31 @@ class BodyComponent extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CardWidget(
-                    imageName: 'icon_fence.png',
-                    mr: 10,
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchApps(com: 'com.weeo.fence');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_fence.png',
+                      mr: 10,
+                    ),
                   ),
-                  CardWidget(
-                    imageName: 'icon_guidance.png',
-                    mr: 10,
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchApps(com: 'com.weeo.guidance');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_guidance.png',
+                      mr: 10,
+                    ),
                   ),
-                  CardWidget(
-                    imageName: 'icon_farm.png',
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchApps(com: 'com.weeo.farm');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_farm.png',
+                    ),
                   ),
                 ],
               ),
@@ -174,16 +224,31 @@ class BodyComponent extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CardWidget(
-                    imageName: 'icon_the_edge_company.png',
-                    mr: 10,
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchBrowser(url: '$EDGE_COMPANY_URL');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_the_edge_company.png',
+                      mr: 10,
+                    ),
                   ),
-                  CardWidget(
-                    imageName: 'icon_ditch_assist.png',
-                    mr: 10,
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchBrowser(url: '$DITCH_ASSIST_URL');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_ditch_assist.png',
+                      mr: 10,
+                    ),
                   ),
-                  CardWidget(
-                    imageName: 'icon_weather_company.png',
+                  GestureDetector(
+                    onTap: () {
+                      controller.launchBrowser(url: '$WEATHER_COMPANY_URL');
+                    },
+                    child: CardWidget(
+                      imageName: 'icon_weather_company.png',
+                    ),
                   ),
                 ],
               ),
@@ -232,7 +297,10 @@ class CardWidget extends StatelessWidget {
 class AppBarComponent extends StatelessWidget {
   const AppBarComponent({
     Key key,
+    @required this.controller,
   }) : super(key: key);
+
+  final HomeController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -249,26 +317,31 @@ class AppBarComponent extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.baseline,
             children: [
-              Container(
-                child: Column(
-                  children: [
-                    Container(
-                      child: Icon(
-                        Icons.close,
-                        color: COLOR_WHITE,
-                        size: 24.w,
-                      ),
-                    ),
-                    Container(
-                      child: Text(
-                        'Logout',
-                        style: TextStyle(
+              GestureDetector(
+                onTap: () {
+                  controller.logout();
+                },
+                child: Container(
+                  child: Column(
+                    children: [
+                      Container(
+                        child: Icon(
+                          Icons.close,
                           color: COLOR_WHITE,
-                          fontSize: 9.nsp,
+                          size: 24.w,
                         ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        child: Text(
+                          'Logout',
+                          style: TextStyle(
+                            color: COLOR_WHITE,
+                            fontSize: 9.nsp,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
               Container(

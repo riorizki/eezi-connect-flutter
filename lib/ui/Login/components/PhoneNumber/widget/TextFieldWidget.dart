@@ -5,7 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class TextFieldWidget extends StatelessWidget {
   const TextFieldWidget({
     Key key,
+    @required this.textController,
   }) : super(key: key);
+  final TextEditingController textController;
 
   @override
   Widget build(BuildContext context) {
@@ -13,6 +15,7 @@ class TextFieldWidget extends StatelessWidget {
       width: 170.w,
       height: 31.h,
       child: TextField(
+        controller: textController,
         style: TextStyle(
           color: COLOR_WHITE,
           fontSize: 12.nsp,

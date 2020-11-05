@@ -6,9 +6,11 @@ class TextFieldWidget extends StatelessWidget {
   const TextFieldWidget({
     Key key,
     this.hint,
+    this.controller,
   }) : super(key: key);
 
   final String hint;
+  final TextEditingController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +18,7 @@ class TextFieldWidget extends StatelessWidget {
       width: 320.w,
       height: 40.h,
       child: TextField(
+        controller: controller,
         style: TextStyle(
           color: COLOR_GRAY,
           fontSize: 12.nsp,

@@ -1,4 +1,3 @@
-import 'package:eezi_connect/config/ColorConfig.dart';
 import 'package:eezi_connect/ui/Login/components/PhoneNumber/widget/ButtonWidget.dart';
 import 'package:eezi_connect/ui/Login/components/PhoneNumber/widget/DropDownWidget.dart';
 import 'package:eezi_connect/ui/Login/components/PhoneNumber/widget/TextFieldWidget.dart';
@@ -8,7 +7,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class PhoneNumberComponent extends StatelessWidget {
   const PhoneNumberComponent({
     Key key,
+    @required this.textController,
+    @required this.onTap,
   }) : super(key: key);
+
+  final TextEditingController textController;
+  final Function onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -25,12 +29,14 @@ class PhoneNumberComponent extends StatelessWidget {
               width: 18.w,
             ),
             // Text Field
-            TextFieldWidget(),
+            TextFieldWidget(
+              textController: textController,
+            ),
             SizedBox(
               width: 17.w,
             ),
             // Button Next
-            ButtonWidget(),
+            GestureDetector(onTap: onTap, child: ButtonWidget()),
           ],
         ),
       ),

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "301842841884",
+    "firebase_url": "https://misagani-eezi.firebaseio.com",
+    "project_id": "misagani-eezi",
+    "storage_bucket": "misagani-eezi.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:301842841884:android:965693b169cd34bb877ad9",
+        "android_client_info": {
+          "package_name": "com.weeo.eezi_connect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "301842841884-0l7b9e3f974bssq8jg4fk9vpcr65gccv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.weeo.eezi_connect",
+            "certificate_hash": "50cb4f4bbdffa239019bd44df65978255210174c"
+          }
+        },
+        {
+          "client_id": "301842841884-1kfu6l0dgkldvk377hnbf87c39vh2vvi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxzgqsDBERkvizyuxLqTmnJRG3-9MMsqg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "301842841884-1kfu6l0dgkldvk377hnbf87c39vh2vvi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
