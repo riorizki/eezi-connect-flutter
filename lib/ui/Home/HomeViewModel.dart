@@ -1,43 +1,27 @@
 import 'package:device_apps/device_apps.dart';
 import 'package:eezi_connect/config/ColorConfig.dart';
+import 'package:eezi_connect/injectable.dart';
+import 'package:eezi_connect/services/AuthService.dart';
 import 'package:eezi_connect/services/StorageService.dart';
 import 'package:eezi_connect/ui/SplashScreen/SplashScreen.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:stacked/stacked.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class HomeController extends GetxController {
-  final isLoading = false.obs;
-
-  final StorageService service = Get.put(StorageService());
-
-  final GoogleSignIn googleSignIn = GoogleSignIn();
+class HomeViewModel extends BaseViewModel {
+  final StorageService service = getIt.get<StorageService>();
+  final AuthService authService = getIt.get<AuthService>();
 
   void logout() async {
-    await googleSignIn.signOut();
+    authService.signOutGoogle();
     print("User Signed Out");
     service.remove();
     Get.off(SplashScreen());
   }
 
-  @override
-  void onInit() {
-    // TODO: implement onInit
-    super.onInit();
-  }
-
-  @override
-  void onClose() {
-    // TODO: implement onClose
-    super.onClose();
-  }
-
-  void setLoading(bool loading) {
-    isLoading.value = loading;
-  }
-
   void launchBrowser({String url}) async {
-    setLoading(true);
+    setBusy(true);
 
     try {
       await launch('$url');
@@ -46,11 +30,11 @@ class HomeController extends GetxController {
       showErrorBanner('$e');
     }
 
-    setLoading(false);
+    setBusy((false);
   }
 
   void launchApps({String com}) async {
-    setLoading(true);
+    setBusy(true);
 
     try {
       bool isInstalled = await DeviceApps.isAppInstalled('$com');
@@ -65,7 +49,7 @@ class HomeController extends GetxController {
       showErrorBanner('$e');
     }
 
-    setLoading(false);
+    setBusy((false);
   }
 
   void showSuccessBanner(String msg) {

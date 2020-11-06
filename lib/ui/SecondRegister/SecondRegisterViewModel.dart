@@ -1,4 +1,7 @@
 import 'package:eezi_connect/config/ColorConfig.dart';
+import 'package:eezi_connect/injectable.dart';
+import 'package:eezi_connect/models/UserFirebase.dart';
+import 'package:eezi_connect/services/FirebaseFirestoreService.dart';
 import 'package:eezi_connect/ui/Home/Home.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -9,6 +12,9 @@ class SecondRegisterController extends GetxController {
   final isLoading = false.obs;
   final ApiService apiService = Get.put(ApiService());
   final StorageService storageService = Get.put(StorageService());
+
+  final FirebaseFirestoreService _firebaseFirestoreService =
+      getIt.get<FirebaseFirestoreService>();
 
   TextEditingController fullNameController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
@@ -67,15 +73,23 @@ class SecondRegisterController extends GetxController {
       final username = storageService.read('username');
       final userId = storageService.read('id');
 
-      final response = await apiService.updateUserData(
-        user_id: userId,
-        username: username,
-        phoneNumber: phone,
-        address: address,
-        avatar: '',
-        email: email,
-        fullName: fullName,
-      );
+      UserFirebase user = UserFirebase(
+          fullName: fullName,
+          phoneNumber: phone,
+          email: email,
+          address: address);
+
+      final data = await _firebaseFirestoreService.updateUser(userId, user);
+
+      // final response = await apiService.updateUserData(
+      //   userId: userId,
+      //   username: username,
+      //   phoneNumber: phone,
+      //   address: address,
+      //   avatar: '',
+      //   email: email,
+      //   fullName: fullName,
+      // );
 
       Get.off(HomeScreen());
     } catch (e) {
