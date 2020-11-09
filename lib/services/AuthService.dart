@@ -1,95 +1,87 @@
 import 'package:eezi_connect/config/ColorConfig.dart';
-import 'package:eezi_connect/services/ApiService.dart';
-import 'package:eezi_connect/services/StorageService.dart';
-import 'package:eezi_connect/ui/Home/Home.dart';
-import 'package:eezi_connect/ui/Verification/Verification.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:injectable/injectable.dart';
 
-class LoginController extends GetxController {
-  final isLoading = false.obs;
-
+@lazySingleton
+class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = GoogleSignIn();
-  TextEditingController phoneController = TextEditingController();
-  final ApiService apiService = Get.put(ApiService());
-  final StorageService storageService = Get.put(StorageService());
 
-  @override
-  void onInit() {
-    super.onInit();
+  _printCredentials(_accessToken, LoginResult result) {
+    _accessToken = result.accessToken;
+    print("userId: ${result.accessToken.userId}");
+    print("token: ${_accessToken.toJson()}");
+    print("expires: ${result.accessToken.expires}");
+    print("grantedPermission: ${result.accessToken.grantedPermissions}");
+    print("declinedPermissions: ${result.accessToken.declinedPermissions}");
   }
 
-  @override
-  void onClose() {
-    super.onClose();
-  }
-
-  void register() async {
-    setLoading(true);
+  Future<User> signInWithFacebook() async {
     try {
-      var number = phoneController.text;
-      if (number.isNullOrBlank) {
-        showErrorBanner('Please provide Phone Number');
-        setLoading(false);
-        return;
-      }
-      number = '+62$number';
-      final data = await apiService.registerPhoneNumber(phoneNumber: '$number');
-      showSuccessBanner('Success Register');
-      storageService.save('id', '${data.data.id}');
-      Get.to(VerificationScreen());
-    } catch (e) {
-      print(e);
-      showErrorBanner('$e');
-    }
-    setLoading(false);
-  }
+      // Trigger the sign-in flow
+      final LoginResult result = await FacebookAuth.instance.login();
 
-  void setLoading(bool loading) {
-    isLoading.value = loading;
-  }
+      switch (result.status) {
+        case FacebookAuthLoginResponse.ok:
+          // Create a credential from the access token
+          final FacebookAuthCredential facebookAuthCredential =
+              FacebookAuthProvider.credential(result.accessToken.token);
 
-  void showSuccessBanner(String msg) {
-    Get.snackbar('Notification', '$msg', backgroundColor: COLOR_CONNECT_1);
-  }
+          final authResult = await FirebaseAuth.instance
+              .signInWithCredential(facebookAuthCredential);
+          final User user = authResult.user;
 
-  void showErrorBanner(String msg) {
-    Get.snackbar('Error', '$msg', backgroundColor: COLOR_RED);
-  }
+          // Once signed in, return the UserCredential
+          return user;
 
-  void loginGoogle() async {
-    setLoading(true);
-    try {
-      var googleUser = await signInWithGoogleV2();
-      if (googleUser != null) {
-        print('success login with google');
-        print(googleUser);
-        storageService.save('id', googleUser.photoURL);
-        Get.off(HomeScreen());
+          break;
+        case FacebookAuthLoginResponse.cancelled:
+          print("login cancelled");
+
+          return null;
+          break;
+        default:
+          print("login failed");
+
+          return null;
       }
     } catch (e) {
       print('$e');
       showErrorBanner('$e');
+      return null;
     }
-    setLoading(false);
   }
 
-  void loginFacebook() async {
-    setLoading(true);
+  Future<User> loginGoogle() async {
+    try {
+      var googleUser = await signInWithGoogleV2();
+      if (googleUser != null) {
+        return googleUser;
+      }
+      return null;
+    } catch (e) {
+      print('$e');
+      showErrorBanner('$e');
+      return null;
+    }
+  }
+
+  Future<User> loginFacebook() async {
     try {
       var facebookUser = await signInWithFacebook();
       if (facebookUser != null) {
         print('success login with google');
         print(facebookUser);
+        return facebookUser;
       }
     } catch (e) {
       print('$e');
       showErrorBanner('$e');
+      return null;
     }
-    setLoading(false);
   }
 
   Future<User> signInWithGoogleV2() async {
@@ -121,25 +113,6 @@ class LoginController extends GetxController {
     return null;
   }
 
-  Future<UserCredential> signInWithFacebook() async {
-    // try {
-    //   // Trigger the sign-in flow
-    //   final LoginResult result = await FacebookAuth.instance.login();
-    //
-    //   // Create a credential from the access token
-    //   final FacebookAuthCredential facebookAuthCredential =
-    //       FacebookAuthProvider.credential(result.accessToken.token);
-    //
-    //   // Once signed in, return the UserCredential
-    //   return await FirebaseAuth.instance
-    //       .signInWithCredential(facebookAuthCredential);
-    // } catch (e) {
-    //   print('$e');
-    //   showErrorBanner('$e');
-    //   return null;
-    // }
-  }
-
   Future<UserCredential> signInWithGoogle() async {
     try {
       // Trigger the authentication flow
@@ -166,7 +139,20 @@ class LoginController extends GetxController {
   }
 
   void signOutGoogle() async {
+    await _auth.signOut();
     await googleSignIn.signOut();
     print("User Signed Out");
+  }
+
+  void signOutFacebook() async {
+    await FacebookAuth.instance.logOut();
+  }
+
+  void showSuccessBanner(String msg) {
+    Get.snackbar('Notification', '$msg', backgroundColor: COLOR_CONNECT_1);
+  }
+
+  void showErrorBanner(String msg) {
+    Get.snackbar('Error', '$msg', backgroundColor: COLOR_RED);
   }
 }

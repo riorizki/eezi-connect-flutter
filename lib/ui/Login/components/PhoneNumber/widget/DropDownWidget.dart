@@ -5,7 +5,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class DropDownWidget extends StatelessWidget {
   const DropDownWidget({
     Key key,
+    @required this.onTap,
   }) : super(key: key);
+
+  final Function onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +25,9 @@ class DropDownWidget extends StatelessWidget {
           left: 8.w,
         ),
         alignment: Alignment.center,
-        child: DropDownButtonWidget(),
+        child: DropDownButtonWidget(
+          onTap: (val) => onTap(val),
+        ),
       ),
     );
   }
@@ -31,7 +36,10 @@ class DropDownWidget extends StatelessWidget {
 class DropDownButtonWidget extends StatelessWidget {
   const DropDownButtonWidget({
     Key key,
+    @required this.onTap,
   }) : super(key: key);
+
+  final Function onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -66,8 +74,60 @@ class DropDownButtonWidget extends StatelessWidget {
           ),
           value: 1,
         ),
+        DropdownMenuItem(
+          child: Row(
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 5.w),
+                width: 16.w,
+                height: 12.h,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/italy-flag-icon-256.png'),
+                  ),
+                ),
+              ),
+              Container(
+                child: Text(
+                  '+81',
+                  style: TextStyle(
+                    fontSize: 12.nsp,
+                    color: COLOR_WHITE,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          value: 2,
+        ),
+        DropdownMenuItem(
+          child: Row(
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 5.w),
+                width: 16.w,
+                height: 12.h,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/japan-flag-icon-256.png'),
+                  ),
+                ),
+              ),
+              Container(
+                child: Text(
+                  '+39',
+                  style: TextStyle(
+                    fontSize: 12.nsp,
+                    color: COLOR_WHITE,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          value: 3,
+        ),
       ],
-      onChanged: (val) {},
+      onChanged: (val) => onTap(val),
     );
   }
 }

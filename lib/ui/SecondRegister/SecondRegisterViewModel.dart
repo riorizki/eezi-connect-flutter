@@ -1,17 +1,22 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eezi_connect/config/ColorConfig.dart';
 import 'package:eezi_connect/injectable.dart';
 import 'package:eezi_connect/models/UserFirebase.dart';
+import 'package:eezi_connect/services/ApiService.dart';
 import 'package:eezi_connect/services/FirebaseFirestoreService.dart';
+import 'package:eezi_connect/services/StorageService.dart';
 import 'package:eezi_connect/ui/Home/Home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:eezi_connect/services/ApiService.dart';
-import 'package:eezi_connect/services/StorageService.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:stacked/stacked.dart';
 
-class SecondRegisterController extends GetxController {
-  final isLoading = false.obs;
-  final ApiService apiService = Get.put(ApiService());
-  final StorageService storageService = Get.put(StorageService());
+class SecondRegisterViewModel extends BaseViewModel {
+  final ApiService apiService = getIt.get<ApiService>();
+  final StorageService storageService = getIt.get<StorageService>();
 
   final FirebaseFirestoreService _firebaseFirestoreService =
       getIt.get<FirebaseFirestoreService>();
@@ -21,20 +26,61 @@ class SecondRegisterController extends GetxController {
   TextEditingController emailController = TextEditingController();
   TextEditingController addressController = TextEditingController();
 
-  @override
+  String username = '';
+
+  String imagePicked;
+  String urlImage;
+  bool afterPicked = false;
+
+  final picker = ImagePicker();
+
   void onInit() {
-    // TODO: implement onInit
-    super.onInit();
+    setBusy(true);
+
+    phoneController.text = storageService.read('number');
+    username = storageService.read('username');
+
+    setValueTextField();
+
+    setBusy(false);
   }
 
-  @override
-  void onClose() {
-    // TODO: implement onClose
-    super.onClose();
+  void setValueTextField() {
+    final username = storageService.read('username');
+    final email = storageService.read('emailTemp');
+    final photoUrl = storageService.read('photoUrl');
+
+    urlImage = photoUrl;
+    fullNameController.text = username;
+    emailController.text = email;
   }
 
-  void setLoading(bool loading) {
-    isLoading.value = loading;
+  void pickImageCamera() async {
+    final pickedFile =
+        await picker.getImage(source: ImageSource.camera, imageQuality: 20);
+
+    if (pickedFile != null) {
+      imagePicked = File(pickedFile.path).path;
+      afterPicked = true;
+    } else {
+      showErrorBanner('No image picked');
+    }
+
+    setBusy(false);
+  }
+
+  void pickImageGallery() async {
+    final pickedFile =
+        await picker.getImage(source: ImageSource.gallery, imageQuality: 20);
+
+    if (pickedFile != null) {
+      imagePicked = File(pickedFile.path).path;
+      afterPicked = true;
+    } else {
+      showErrorBanner('No image picked');
+    }
+
+    setBusy(false);
   }
 
   void showSuccessBanner(String msg) {
@@ -49,47 +95,104 @@ class SecondRegisterController extends GetxController {
     Get.off(HomeScreen());
   }
 
-  void completeData() async {
-    setLoading(true);
+  void completeDataProvider(String id) async {
+    setBusy(true);
+    final loginType = storageService.read('kindLogin');
+
+    String username = fullNameController.text;
+    String phone = phoneController.text;
+    String email = emailController.text;
+
+    if (username.isNullOrBlank) {
+      showErrorBanner('Please provide username');
+      setBusy(false);
+      return;
+    }
+
+    username = GetUtils.removeAllWhitespace(username).toLowerCase();
+    final usernameExist = await checkForUsername(username);
+
+    if (usernameExist) {
+      showErrorBanner('Username is exist, please choose another username!');
+      setBusy(false);
+      return;
+    }
+
+    var url = '';
+
+    if (!GetUtils.isNullOrBlank(imagePicked)) {
+      url = await _firebaseFirestoreService.uploadFile(id, imagePicked);
+      urlImage = url;
+    } else {
+      final user = await _firebaseFirestoreService.getUser(id);
+      url = user.avatar;
+    }
+
+    await _firebaseFirestoreService.updateDynamicUser(id, {
+      'username': username,
+      'loginProvider': loginType,
+      'email': email,
+      'phoneNumber': phone,
+      'avatar': url,
+    });
+    setBusy(false);
+    storageService.save('username', '$username');
+    Get.off(HomeScreen());
+  }
+
+  void completePhoneNumber() async {
+    setBusy(true);
+
     try {
-      var fullName = fullNameController.text;
-      var phone = phoneController.text;
-      var email = emailController.text;
-      var address = addressController.text;
+      String fullName = fullNameController.text;
+      String phone = phoneController.text;
+      String email = emailController.text;
+      username = storageService.read('username');
 
-      print(fullName);
-      print(phone);
-      print(email);
-      print(address);
-
-      if (address.isNullOrBlank ||
-          email.isNullOrBlank ||
+      if (email.isNullOrBlank ||
           phone.isNullOrBlank ||
           fullName.isNullOrBlank) {
         showErrorBanner('Please fill all text field');
-        setLoading(false);
+        setBusy(false);
+
         return;
       }
-      final username = storageService.read('username');
-      final userId = storageService.read('id');
+
+      final pNumber = storageService.read('number');
+      username = GetUtils.removeAllWhitespace(username).toLowerCase();
+
+      final isExist = await checkForUsername(username);
+      if (isExist) {
+        showErrorBanner('Username is taken. Please use another Username!');
+        setBusy(false);
+
+        return;
+      }
 
       UserFirebase user = UserFirebase(
-          fullName: fullName,
-          phoneNumber: phone,
-          email: email,
-          address: address);
+        username: username,
+        phoneNumber: pNumber,
+        email: email,
+        loginProvider: 'phoneNumber',
+      );
 
-      final data = await _firebaseFirestoreService.updateUser(userId, user);
+      final data = await _firebaseFirestoreService.addUser(user);
 
-      // final response = await apiService.updateUserData(
-      //   userId: userId,
-      //   username: username,
-      //   phoneNumber: phone,
-      //   address: address,
-      //   avatar: '',
-      //   email: email,
-      //   fullName: fullName,
-      // );
+      storageService.save('id', '$data');
+
+      var url = '';
+
+      if (!GetUtils.isNullOrBlank(imagePicked)) {
+        url = await _firebaseFirestoreService.uploadFile(data, imagePicked);
+        urlImage = url;
+      } else {
+        url = user.avatar;
+      }
+
+      await _firebaseFirestoreService.updateDynamicUser(data, {
+        'id': data,
+        'avatar': url,
+      });
 
       Get.off(HomeScreen());
     } catch (e) {
@@ -97,6 +200,118 @@ class SecondRegisterController extends GetxController {
       showErrorBanner('$e');
     }
 
-    setLoading(false);
+    setBusy(false);
+  }
+
+  void completeData() async {
+    final isProviderLogin = storageService.read('typeLogin');
+
+    if (isProviderLogin == 'true') {
+      final id = storageService.read('id');
+      completeDataProvider(id);
+    } else {
+      completePhoneNumber();
+    }
+  }
+
+  Future<bool> checkForUsername(String username) async {
+    final users = await _firebaseFirestoreService.usersCollection
+        .where('username', isEqualTo: username)
+        .get();
+
+    final documents = users.docs;
+
+    if (documents.length > 0) {
+      return true;
+    }
+
+    return false;
+  }
+
+  Widget returnImage() {
+    final imageLocal = GetUtils.isNullOrBlank(imagePicked);
+    final imageOnline = GetUtils.isNullOrBlank(urlImage);
+
+    if (imageOnline && imageLocal) {
+      return Container(
+        width: 72.w,
+        height: 75.h,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: COLOR_GRAY),
+        ),
+        alignment: Alignment.center,
+        child: Icon(
+          Icons.add_a_photo,
+          color: COLOR_GRAY,
+          size: 24.w,
+        ),
+      );
+    } else if (imageOnline && !imageLocal) {
+      return Container(
+        width: 72.w,
+        height: 75.h,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: COLOR_GRAY),
+          image: DecorationImage(
+            image: FileImage(
+              File(imagePicked),
+            ),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    } else if (!imageOnline && imageLocal) {
+      return Container(
+        width: 72.w,
+        height: 75.h,
+        child: CircleAvatar(
+          backgroundImage: CachedNetworkImageProvider(urlImage),
+          radius: 36.w,
+        ),
+      );
+    } else if (!imageOnline && !imageLocal) {
+      if (afterPicked) {
+        return Container(
+          width: 72.w,
+          height: 75.h,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: COLOR_GRAY),
+            image: DecorationImage(
+              image: FileImage(
+                File(imagePicked),
+              ),
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      } else {
+        return Container(
+          width: 72.w,
+          height: 75.h,
+          child: CircleAvatar(
+            backgroundImage: CachedNetworkImageProvider(urlImage),
+            radius: 36.w,
+          ),
+        );
+      }
+    }
+
+    return Container(
+      width: 72.w,
+      height: 75.h,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: COLOR_GRAY),
+      ),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.add_a_photo,
+        color: COLOR_GRAY,
+        size: 24.w,
+      ),
+    );
   }
 }

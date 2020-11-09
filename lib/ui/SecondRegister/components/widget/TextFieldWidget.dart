@@ -7,10 +7,12 @@ class TextFieldWidget extends StatelessWidget {
     Key key,
     this.hint,
     this.controller,
+    this.isEnabled = true,
   }) : super(key: key);
 
   final String hint;
   final TextEditingController controller;
+  final bool isEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -18,12 +20,15 @@ class TextFieldWidget extends StatelessWidget {
       width: 320.w,
       height: 40.h,
       child: TextField(
+        enabled: isEnabled,
         controller: controller,
         style: TextStyle(
-          color: COLOR_GRAY,
+          color: COLOR_PRIMARY_1,
           fontSize: 12.nsp,
         ),
+        textAlignVertical: TextAlignVertical.bottom,
         decoration: InputDecoration(
+          suffixIcon: isEnabled == true ? null : Icon(Icons.lock_outline),
           isDense: true,
           hintText: '$hint',
           hintStyle: TextStyle(
@@ -31,6 +36,12 @@ class TextFieldWidget extends StatelessWidget {
             fontSize: 12.nsp,
           ),
           enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: COLOR_GRAY,
+            ),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          disabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
               color: COLOR_GRAY,
             ),

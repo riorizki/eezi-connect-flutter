@@ -1,24 +1,24 @@
 import 'package:eezi_connect/config/ColorConfig.dart';
-import 'package:eezi_connect/ui/Login/LoginController.dart';
+import 'package:eezi_connect/ui/Login/LoginViewModel.dart';
 import 'package:eezi_connect/ui/Login/components/Logo/LogoComponent.dart';
 import 'package:eezi_connect/ui/Login/components/PhoneNumber/PhoneNumberComponent.dart';
 import 'package:eezi_connect/ui/Login/components/Title/TitleComponent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:loading_overlay/loading_overlay.dart';
+import 'package:stacked/stacked.dart';
 
 import 'components/Subtitle/SubtitleComponent.dart';
 
 class LoginScreen extends StatelessWidget {
-  final LoginController controller = Get.put(LoginController());
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Obx(
-        () => LoadingOverlay(
-          isLoading: controller.isLoading.value,
+    return ViewModelBuilder<LoginViewModel>.reactive(
+      viewModelBuilder: () => LoginViewModel(),
+      builder: (context, model, child) => Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: LoadingOverlay(
+          isLoading: model.isBusy,
           child: Stack(
             children: [
               Positioned(
@@ -39,9 +39,11 @@ class LoginScreen extends StatelessWidget {
                       PhoneNumberComponent(
                         onTap: () {
                           print('login');
-                          controller.register();
+                          model.register();
                         },
-                        textController: controller.phoneController,
+                        onDropDownChangedValue: (val) =>
+                            model.onDropDownChangedValue(val),
+                        textController: model.phoneController,
                       ),
                     ],
                   ),
@@ -75,8 +77,8 @@ class LoginScreen extends StatelessWidget {
                               GestureDetector(
                                 onTap: () {
                                   print('Facebook Login Pressed');
-                                  // controller.loginFacebook();
-                                  controller.showSuccessBanner('In Progress');
+                                  model.loginFb();
+                                  // model.showSuccessBanner('In Progress');
                                 },
                                 child: Container(
                                   width: 50.w,
@@ -97,7 +99,7 @@ class LoginScreen extends StatelessWidget {
                               GestureDetector(
                                 onTap: () {
                                   print('Google Login Pressed');
-                                  controller.loginGoogle();
+                                  model.loginGoogle();
                                   // controller.signOutGoogle();
                                 },
                                 child: Container(

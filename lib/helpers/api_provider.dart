@@ -5,14 +5,15 @@ import 'package:eezi_connect/helpers/api_error.dart';
 import 'package:http/http.dart' as http;
 
 class ApiProvider {
-  final BaseUrl = 'http://54.169.252.1:90/api/v1/auth';
+  final baseUrl = 'http://54.169.252.1:90/api/v1/auth';
+  // final baseUrl = 'http://13c888600a4f.ngrok.io/api/v1/auth';
 
   Future<dynamic> get(String url, {dynamic headers}) async {
     print('Api Get, url $url');
     var responseJson;
 
     try {
-      var uri = BaseUrl + url;
+      var uri = baseUrl + url;
       final response = await http.get(uri, headers: headers);
       responseJson = _returnResponse(response);
     } on SocketException {
@@ -28,8 +29,9 @@ class ApiProvider {
     print('Api Post, url $url');
     var responseJson;
     print(body);
+
     try {
-      var uri = BaseUrl + url;
+      var uri = baseUrl + url;
       print(uri);
       final response = await http.post(uri, body: body, headers: headers);
       responseJson = _returnResponse(response);

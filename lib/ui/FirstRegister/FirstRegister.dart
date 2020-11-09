@@ -1,20 +1,21 @@
-import 'package:eezi_connect/ui/FirstRegister/FirstRegisterController.dart';
+import 'package:eezi_connect/config/ColorConfig.dart';
+import 'package:eezi_connect/ui/FirstRegister/FirstRegisterViewModel.dart';
 import 'package:eezi_connect/ui/FirstRegister/components/Logo/LogoComponent.dart';
 import 'package:eezi_connect/ui/FirstRegister/components/widget/TextFieldWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:eezi_connect/config/ColorConfig.dart';
-import 'package:get/get.dart';
 import 'package:loading_overlay/loading_overlay.dart';
+import 'package:stacked/stacked.dart';
 
 class FirstRegisterScreen extends StatelessWidget {
-  final FirstRegisterController controller = Get.put(FirstRegisterController());
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Obx(
-        () => LoadingOverlay(
-          isLoading: controller.isLoading.value,
+    return ViewModelBuilder<FirstRegisterViewModel>.reactive(
+      viewModelBuilder: () => FirstRegisterViewModel(),
+      onModelReady: (model) => model.onInit(),
+      builder: (context, model, child) => Scaffold(
+        body: LoadingOverlay(
+          isLoading: model.isBusy,
           child: Stack(
             children: [
               Positioned(
@@ -67,7 +68,7 @@ class FirstRegisterScreen extends StatelessWidget {
                               ),
                             ),
                             TextFieldWidget(
-                              controller: controller.textController,
+                              controller: model.textController,
                             ),
                           ],
                         ),
@@ -85,7 +86,7 @@ class FirstRegisterScreen extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          controller.completeData();
+                          model.completeData();
                         },
                         child: Container(
                           margin: EdgeInsets.only(top: 50.h),
@@ -108,7 +109,7 @@ class FirstRegisterScreen extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          controller.skip();
+                          model.skip();
                         },
                         child: Container(
                           margin: EdgeInsets.only(top: 20.h),

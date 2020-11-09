@@ -1,10 +1,12 @@
 import 'package:get_storage/get_storage.dart';
+import 'package:injectable/injectable.dart';
 
+@lazySingleton
 class StorageService {
   final box = GetStorage();
 
   void remove() {
-    box.remove('id');
+    box.erase();
   }
 
   void save(String key, String value) {

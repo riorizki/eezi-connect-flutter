@@ -1,10 +1,12 @@
 import 'package:eezi_connect/helpers/api_provider.dart';
 import 'package:eezi_connect/models/User.dart';
 import 'package:get/get.dart';
+import 'package:injectable/injectable.dart';
 
+@lazySingleton
 class ApiService {
-  // final baseUrl = 'http://54.169.252.1:90/api/v1/auth';
-  final baseUrl = 'http://10.0.2.2:8000/api/v1/auth';
+  final baseUrl = 'http://54.169.252.1:90/api/v1/auth';
+  // final baseUrl = 'http://10.0.2.2:8000/api/v1/auth';
   final ApiProvider apiProvider = Get.put(ApiProvider());
 
   Future<User> verificationToken({
@@ -38,9 +40,9 @@ class ApiService {
       String email,
       String address,
       String avatar,
-      String user_id}) async {
+      String userId}) async {
     final response = await apiProvider.post('/update-user-data/', {
-      'user_id': user_id,
+      'user_id': userId,
       'username': username,
       'full_name': fullName,
       'phone_number': phoneNumber,

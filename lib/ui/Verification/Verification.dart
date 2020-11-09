@@ -1,22 +1,23 @@
 import 'package:eezi_connect/config/ColorConfig.dart';
-import 'package:eezi_connect/ui/Verification/VerificationController.dart';
+import 'package:eezi_connect/ui/Verification/VerificationViewModel.dart';
 import 'package:eezi_connect/ui/Verification/components/Logo/LogoComponent.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:pin_input_text_field/pin_input_text_field.dart';
+import 'package:stacked/stacked.dart';
 
 class VerificationScreen extends StatelessWidget {
-  final VerificationController controller = Get.put(VerificationController());
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: Obx(
-        () => LoadingOverlay(
-          isLoading: controller.isLoading.value,
+    return ViewModelBuilder<VerificationViewModel>.reactive(
+      onModelReady: (model) => model.onInit(),
+      viewModelBuilder: () => VerificationViewModel(),
+      builder: (context, model, child) => Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: LoadingOverlay(
+          isLoading: model.isBusy,
           child: SingleChildScrollView(
             child: Container(
               width: 360.w,
@@ -64,7 +65,7 @@ class VerificationScreen extends StatelessWidget {
                             child: Container(
                               margin: EdgeInsets.only(top: 10.h),
                               child: Text(
-                                '+62-818-1080-87',
+                                '${model.phoneNumber}',
                                 style: TextStyle(
                                   color: COLOR_WHITE,
                                   fontSize: 18.nsp,
@@ -92,9 +93,9 @@ class VerificationScreen extends StatelessWidget {
                             child: PinInputTextField(
                               onSubmit: (pin) {
                                 debugPrint('submit pin:$pin');
-                                controller.verification();
+                                model.verification();
                               },
-                              controller: controller.textController,
+                              controller: model.textController,
                               decoration: UnderlineDecoration(
                                 colorBuilder: PinListenColorBuilder(
                                   COLOR_PRIMARY_1,
@@ -104,19 +105,30 @@ class VerificationScreen extends StatelessWidget {
                             ),
                           ),
                           Container(
-                            margin: EdgeInsets.only(top: 67.h),
-                            child: Text(
-                              'Did not receive it?',
-                              style: TextStyle(
-                                color: COLOR_PRIMARY_1,
-                                fontSize: 12.nsp,
+                            margin: EdgeInsets.only(top: 47.h),
+                            child: FlatButton(
+                              onPressed: model.buttonEnable
+                                  ? () {
+                                      //request new verification code
+                                      model.setTimer();
+                                    }
+                                  : () {
+                                      model.showErrorBanner(
+                                          'Wait ${model.timerTick} second to request new code!');
+                                    },
+                              child: Text(
+                                'Did not receive it?',
+                                style: TextStyle(
+                                  color: COLOR_PRIMARY_1,
+                                  fontSize: 12.nsp,
+                                ),
                               ),
                             ),
                           ),
                           Container(
-                            margin: EdgeInsets.only(top: 20.h),
+                            margin: EdgeInsets.only(top: 10.h),
                             child: Text(
-                              'Request a new code in (00:30)',
+                              'Request a new code in (00:${model.timerTick})',
                               style: TextStyle(
                                 color: COLOR_PRIMARY_1,
                                 fontSize: 12.nsp,

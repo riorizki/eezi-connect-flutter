@@ -9,10 +9,12 @@ class PhoneNumberComponent extends StatelessWidget {
     Key key,
     @required this.textController,
     @required this.onTap,
+    @required this.onDropDownChangedValue,
   }) : super(key: key);
 
   final TextEditingController textController;
   final Function onTap;
+  final Function onDropDownChangedValue;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,9 @@ class PhoneNumberComponent extends StatelessWidget {
         child: Row(
           children: [
             // Dropdown Button
-            DropDownWidget(),
+            DropDownWidget(
+              onTap: (val) => onDropDownChangedValue(val),
+            ),
             SizedBox(
               width: 18.w,
             ),

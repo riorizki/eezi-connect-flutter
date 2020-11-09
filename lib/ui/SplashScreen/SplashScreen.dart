@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:eezi_connect/config/ColorConfig.dart';
+import 'package:eezi_connect/injectable.dart';
+import 'package:eezi_connect/services/AuthService.dart';
 import 'package:eezi_connect/services/StorageService.dart';
 import 'package:eezi_connect/ui/Home/Home.dart';
 import 'package:eezi_connect/ui/Login/Login.dart';
@@ -14,13 +16,25 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final StorageService service = Get.put(StorageService());
+  final StorageService service = getIt.get<StorageService>();
+  final AuthService authService = getIt.get<AuthService>();
+
   @override
   void initState() {
     Timer(Duration(seconds: 2), () {
+      // logout();
       setHome();
     });
     super.initState();
+  }
+
+  void logout() async {
+    authService.signOutGoogle();
+    authService.signOutFacebook();
+    print("User Signed Out");
+    service.remove();
+
+    print('called');
   }
 
   void setHome() {
